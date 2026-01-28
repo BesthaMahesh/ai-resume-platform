@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+venv/
+.venv/
+env/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Firebase/Sensitive
+serviceAccount.json
+serviceAccount.json.json
+
+# Local Analysis
+*.log
+.DS_Store

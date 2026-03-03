@@ -10,7 +10,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+key = os.getenv("OPENROUTER_API_KEY")
+with open("api_debug.log", "w") as f:
+    if key:
+        f.write(f"API Key loaded: {key[:10]}...{key[-4:]} (Length: {len(key)})\n")
+    else:
+        f.write("API Key NOT found in environment variables!\n")
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=key,
+)
 
 class AnalyzeRequest(BaseModel):
     resume: str
@@ -40,7 +50,7 @@ async def analyze(data: AnalyzeRequest):
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="openai/gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
@@ -71,7 +81,7 @@ async def interview_questions(data: AnalyzeRequest):
     prompt = f"Based on the resume content and job description below, generate 5 technical interview questions and 5 behavioral interview questions.\nResume: {data.resume}\nJob: {data.job}"
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="openai/gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}]
         )
         return {"questions": response.choices[0].message.content}
@@ -85,7 +95,7 @@ async def chat(data: ChatRequest):
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="openai/gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}

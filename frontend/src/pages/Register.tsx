@@ -82,8 +82,8 @@ export default function Register() {
             </div>
 
             {/* Right Side - Registration Form */}
-            <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 xl:px-24 bg-white">
-                <div className="mx-auto w-full max-w-sm lg:w-96">
+            <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-20 xl:px-24 bg-white">
+                <div className="w-full max-w-sm lg:w-96">
                     <div className="mb-10">
                         <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create account</h2>
                         <p className="mt-2 text-sm text-gray-600">

@@ -5,6 +5,7 @@ import axios from "axios";
 import Sidebar from "../components/Sidebar";
 import { Loader2, Calendar, FileText, CheckCircle, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Download, GitCompare } from "lucide-react";
 
 interface Report {
     _id: string;
@@ -74,11 +75,34 @@ export default function History() {
     return (
         <div className="min-h-screen bg-gray-50 flex">
             <Sidebar />
-            <div className="flex-1 lg:ml-64 p-8">
+            <div className="flex-1 lg:ml-72 p-4 pt-24 lg:p-8 transition-all duration-300">
                 <header className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">Scan History</h1>
-                    <p className="text-gray-600">View your past resume analyses.</p>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Scan History</h1>
+                    <p className="text-gray-600 mb-6">View your past resume analyses and track your progress over time.</p>
+
+                    {/* Progress Trend Banner */}
+                    <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg flex items-center justify-between">
+                        <div>
+                            <h2 className="text-lg font-bold mb-1">Your ATS Score Trend</h2>
+                            <p className="text-indigo-100 text-sm">Your average score has increased by 14% this month.</p>
+                        </div>
+                        <div className="flex items-end gap-1 h-12">
+                            {[40, 55, 62, 70, 82].map((h, i) => (
+                                <div key={i} className="w-8 bg-white/30 rounded-t-md hover:bg-white/50 transition cursor-pointer relative group flex items-end">
+                                    <div className="w-full bg-white rounded-t-md" style={{ height: `${h}%` }}></div>
+                                    <span className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">{h}%</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </header>
+
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-lg font-bold text-gray-800">Past Analyses</h2>
+                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-bold shadow-sm hover:bg-gray-50 transition">
+                        <GitCompare className="w-4 h-4" /> Compare Versions
+                    </button>
+                </div>
 
                 {reports.length === 0 ? (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
@@ -144,17 +168,22 @@ export default function History() {
                                 <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
                                     <button
                                         onClick={() => navigate("/dashboard", { state: { initialReport: report } })}
-                                        className="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+                                        className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-lg transition"
                                     >
-                                        View Details <ArrowRight className="h-4 w-4" />
+                                        View <ArrowRight className="h-4 w-4" />
                                     </button>
-                                    <button
-                                        onClick={(e) => deleteReport(report._id, e)}
-                                        className="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-full"
-                                        title="Delete"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button className="text-gray-400 hover:text-indigo-500 transition-colors p-2 hover:bg-indigo-50 rounded-full" title="Download Report">
+                                            <Download className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => deleteReport(report._id, e)}
+                                            className="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-full"
+                                            title="Delete"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))}

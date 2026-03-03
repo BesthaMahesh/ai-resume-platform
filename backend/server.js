@@ -9,41 +9,29 @@ app.use(cors());
 app.use(express.json());
 
 // Initialize Firebase Admin SDK
+let db;
 try {
-    admin.initializeApp({
-        credential: admin.credential.cert(require("./serviceAccount.json")),
-    });
-    console.log("Firebase Admin Initialized");
+    let serviceAccount;
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    } else {
+        serviceAccount = require("./serviceAccount.json");
+    }
+
+    if (!admin.apps.length) {
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+        });
+    }
+    db = admin.firestore();
+    console.log("Firebase Admin & Firestore Initialized");
 } catch (error) {
     console.error("Firebase Admin Initialization Failed:", error.message);
 }
 
-const mongoose = require("mongoose");
-const mongoUser = process.env.MONGO_USER || "";
-const mongoPass = process.env.MONGO_PASS || "";
-const mongoHost = process.env.MONGO_HOST || "localhost";
-const mongoPort = process.env.MONGO_PORT || "27017";
-const mongoDb = "ai-resume-platform";
+// AI Service URL (Local fallback to http://localhost:8000)
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || "http://localhost:8000";
 
-// Construct URI with auth if credentials exist
-const mongoUri = mongoUser && mongoPass
-    ? `mongodb://${mongoUser}:${mongoPass}@${mongoHost}:${mongoPort}/${mongoDb}?authSource=admin`
-    : `mongodb://${mongoHost}:${mongoPort}/${mongoDb}`;
-
-mongoose.connect(mongoUri)
-    .then(() => console.log("Connected to MongoDB"))
-    .catch(err => console.error("MongoDB Connection Error:", err));
-
-const ReportSchema = new mongoose.Schema({
-    userId: String,
-    jobDescription: String,
-    matchScore: Number,
-    skills: [String],
-    feedback: String,
-    createdAt: { type: Date, default: Date.now }
-});
-
-const Report = mongoose.model("Report", ReportSchema);
 const upload = multer();
 
 // Middleware to verify Firebase ID Token
@@ -82,24 +70,24 @@ app.post("/analyze", verifyToken, upload.single("resume"), async (req, res) => {
         }
 
         // Call AI Service
-        const aiRes = await axios.post("http://localhost:8000/analyze", {
+        const aiRes = await axios.post(`${AI_SERVICE_URL}/analyze`, {
             resume: resumeText,
             job
         });
 
         const reportData = {
-            userId: req.user.uid, // Link report to authenticated user
-            jobDescription: job,  // Save job description for history
+            userId: req.user.uid,
+            jobDescription: job,
             matchScore: aiRes.data.matchScore,
             skills: aiRes.data.skills,
-            feedback: aiRes.data.feedback
+            feedback: aiRes.data.feedback,
+            createdAt: new Date().toISOString()
         };
 
-        // Save to MongoDB
-        const newReport = await Report.create(reportData);
+        // Save to Firestore
+        const docRef = await db.collection("reports").add(reportData);
 
-        // Return the report data including the extracted text (needed for follow-up AI tasks)
-        res.json({ id: newReport._id, ...reportData, resumeText: resumeText });
+        res.json({ id: docRef.id, ...reportData, resumeText: resumeText });
     } catch (error) {
         console.error("Error in /analyze:", error.message);
         res.status(500).json({ error: "Internal Server Error", details: error.message });
@@ -109,7 +97,12 @@ app.post("/analyze", verifyToken, upload.single("resume"), async (req, res) => {
 // Get History Endpoint
 app.get("/history", verifyToken, async (req, res) => {
     try {
-        const reports = await Report.find({ userId: req.user.uid }).sort({ createdAt: -1 });
+        const snapshot = await db.collection("reports")
+            .where("userId", "==", req.user.uid)
+            .orderBy("createdAt", "desc")
+            .get();
+
+        const reports = snapshot.docs.map(doc => ({ _id: doc.id, ...doc.data() }));
         res.json(reports);
     } catch (error) {
         console.error("Error fetching history:", error.message);
@@ -120,7 +113,14 @@ app.get("/history", verifyToken, async (req, res) => {
 // Delete History Endpoint
 app.delete("/history/:id", verifyToken, async (req, res) => {
     try {
-        await Report.findOneAndDelete({ _id: req.params.id, userId: req.user.uid });
+        const reportRef = db.collection("reports").doc(req.params.id);
+        const doc = await reportRef.get();
+
+        if (!doc.exists || doc.data().userId !== req.user.uid) {
+            return res.status(404).json({ error: "Report not found" });
+        }
+
+        await reportRef.delete();
         res.json({ message: "Report deleted successfully" });
     } catch (error) {
         console.error("Error deleting report:", error.message);
@@ -132,7 +132,7 @@ app.delete("/history/:id", verifyToken, async (req, res) => {
 app.post("/interview-questions", verifyToken, async (req, res) => {
     try {
         const { resume, job } = req.body;
-        const aiRes = await axios.post("http://localhost:8000/interview-questions", { resume, job });
+        const aiRes = await axios.post(`${AI_SERVICE_URL}/interview-questions`, { resume, job });
         res.json(aiRes.data);
     } catch (error) {
         console.error("Error generating questions:", error.message);
@@ -144,7 +144,7 @@ app.post("/interview-questions", verifyToken, async (req, res) => {
 app.post("/chat", verifyToken, async (req, res) => {
     try {
         const { message, context } = req.body;
-        const aiRes = await axios.post("http://localhost:8000/chat", { message, context });
+        const aiRes = await axios.post(`${AI_SERVICE_URL}/chat`, { message, context });
         res.json(aiRes.data);
     } catch (error) {
         console.error("Error in chat:", error.message);

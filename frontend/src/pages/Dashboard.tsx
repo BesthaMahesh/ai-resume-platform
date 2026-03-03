@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://resume-ai-backend-x1fg.onrender.com";
+
 export default function Dashboard() {
     const [resume, setResume] = useState<File | null>(null);
     const [job, setJob] = useState("");
@@ -93,8 +95,11 @@ export default function Dashboard() {
             form.append("resume", resume);
             form.append("job", job);
 
-            const res = await axios.post("http://localhost:5000/analyze", form, {
-                headers: { "Authorization": `Bearer ${token}`, "Content-Type": "multipart/form-data" }
+            const res = await axios.post(`${API_BASE_URL}/analyze`, form, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    Authorization: `Bearer ${token}`
+                }
             });
             setResult(res.data);
             setActiveTab("analysis");
@@ -113,7 +118,7 @@ export default function Dashboard() {
         setFeatureLoading(true);
         try {
             const token = await user?.getIdToken();
-            const res = await axios.post("http://localhost:5000/interview-questions", {
+            const res = await axios.post(`${API_BASE_URL}/interview-questions`, {
                 resume: result.resumeText || "Missing", job
             }, { headers: { "Authorization": `Bearer ${token}` } });
             setInterviewData(res.data);
@@ -132,7 +137,7 @@ export default function Dashboard() {
         setChatLoading(true);
         try {
             const token = await user?.getIdToken();
-            const res = await axios.post("http://localhost:5000/chat", {
+            const res = await axios.post(`${API_BASE_URL}/chat`, {
                 message: userMsg,
                 context: `Resume Content:\n${result.resumeText || "N/A"}\n\nJob Description:\n${job}`
             }, { headers: { "Authorization": `Bearer ${token}` } });

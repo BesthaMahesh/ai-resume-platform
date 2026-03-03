@@ -9,18 +9,8 @@ services:
     envVars:
       - key: FIREBASE_SERVICE_ACCOUNT
         sync: false
-      - key: AI_SERVICE_URL
+      - key: OPENROUTER_API_KEY
         sync: false
       - key: PORT
         value: 10000
 
-  - type: web
-    name: ai-resume-analyzer
-    env: python
-    plan: free
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port 10001
-    envVars:
-      - key: OPENROUTER_API_KEY
-        sync: false

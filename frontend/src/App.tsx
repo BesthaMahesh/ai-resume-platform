@@ -4,7 +4,6 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
 import Profile from './pages/Profile';
-import Home from './pages/Home';
 import Settings from './pages/Settings';
 import Notifications from './pages/Notifications';
 import JobMatch from './pages/JobMatch';
@@ -22,7 +21,7 @@ function App() {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/dashboard" element={<Dashboard />} />

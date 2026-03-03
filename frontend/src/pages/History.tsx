@@ -7,7 +7,7 @@ import { Loader2, Calendar, FileText, CheckCircle, ArrowRight } from "lucide-rea
 import { useNavigate } from "react-router-dom";
 import { Download, GitCompare } from "lucide-react";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://resume-ai-backend-x1fg.onrender.com";
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:5000" : "https://resume-ai-backend-x1fg.onrender.com");
 
 interface Report {
     _id: string;
@@ -31,16 +31,14 @@ export default function History() {
                 navigate("/login");
             } else {
                 setUser(currentUser);
-                fetchHistory(); // Call fetchHistory without currentUser parameter
+                fetchHistory(currentUser);
             }
         });
         return () => unsubscribe();
     }, [navigate]);
 
-    const fetchHistory = async () => { // Removed currentUser parameter
+    const fetchHistory = async (currentUser: User) => {
         try {
-            const currentUser = auth.currentUser; // Get current user from auth
-            if (!currentUser) return; // Ensure user is logged in
             const token = await currentUser.getIdToken();
             const res = await axios.get(`${API_BASE_URL}/history`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -58,9 +56,8 @@ export default function History() {
         if (!confirm("Are you sure you want to delete this analysis?")) return;
 
         try {
-            const currentUser = auth.currentUser; // Get current user from auth
-            if (!currentUser) return; // Ensure user is logged in
-            const token = await currentUser.getIdToken();
+            if (!user) return; // Ensure user is logged in from state
+            const token = await user.getIdToken();
             await axios.delete(`${API_BASE_URL}/history/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });

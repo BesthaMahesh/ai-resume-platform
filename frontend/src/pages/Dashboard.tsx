@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://resume-ai-backend-x1fg.onrender.com";
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:5000" : "https://resume-ai-backend-x1fg.onrender.com");
 
 export default function Dashboard() {
     const [resume, setResume] = useState<File | null>(null);
@@ -105,7 +105,10 @@ export default function Dashboard() {
             setActiveTab("analysis");
             sessionStorage.setItem("lastAnalysis", JSON.stringify({ result: res.data, job }));
         } catch (error: any) {
-            alert("Analysis failed: " + (error.response?.data?.error || error.message));
+            const errorData = error.response?.data;
+            const errorMsg = errorData?.message || errorData?.error || error.message;
+            const apiDetails = errorData?.responseData ? JSON.stringify(errorData.responseData) : "";
+            alert("Analysis failed: " + errorMsg + (apiDetails ? "\n\nDetails: " + apiDetails : ""));
         } finally {
             clearInterval(loadingInterval);
             setLoading(false);

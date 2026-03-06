@@ -157,12 +157,16 @@ app.post("/analyze", verifyToken, upload.single("resume"), async (req, res) => {
 // Get History Endpoint
 app.get("/history", verifyToken, async (req, res) => {
     try {
+        // Removed .orderBy() to prevent Firebase missing index error
         const snapshot = await db.collection("reports")
             .where("userId", "==", req.user.uid)
-            .orderBy("createdAt", "desc")
             .get();
 
         const reports = snapshot.docs.map(doc => ({ _id: doc.id, ...doc.data() }));
+
+        // Sort in memory to avoid requiring a composite index in Firestore
+        reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
         res.json(reports);
     } catch (error) {
         console.error("Error fetching history:", error.message);

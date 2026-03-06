@@ -15,6 +15,7 @@ yarn-error.log
 # Firebase/Sensitive
 serviceAccount.json
 serviceAccount.json.json
+serviceAccount_single_line.txt
 
 # Local Analysis
 *.log

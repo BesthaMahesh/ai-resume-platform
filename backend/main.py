@@ -55,7 +55,8 @@ async def analyze(data: AnalyzeRequest):
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.2
+            temperature=0.2,
+            max_tokens=1500
         )
         content = response.choices[0].message.content.strip()
         # Clean potential markdown code blocks if the model includes them despite instructions
@@ -82,7 +83,8 @@ async def interview_questions(data: AnalyzeRequest):
     try:
         response = client.chat.completions.create(
             model="openai/gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1500
         )
         return {"questions": response.choices[0].message.content}
     except Exception as e:
@@ -99,7 +101,8 @@ async def chat(data: ChatRequest):
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
-            ]
+            ],
+            max_tokens=1500
         )
         return {"reply": response.choices[0].message.content}
     except Exception as e:

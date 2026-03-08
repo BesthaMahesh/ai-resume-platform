@@ -113,7 +113,8 @@ app.post("/analyze", verifyToken, upload.single("resume"), async (req, res) => {
                 { role: "system", content: system_prompt },
                 { role: "user", content: user_prompt }
             ],
-            temperature: 0.2
+            temperature: 0.2,
+            max_tokens: 1500
         });
 
         console.log("AI Response received");
@@ -200,7 +201,8 @@ app.post("/interview-questions", verifyToken, async (req, res) => {
 
         const aiResponse = await aiClient.post("/chat/completions", {
             model: "openai/gpt-4o-mini",
-            messages: [{ role: "user", content: prompt }]
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 1500
         });
 
         res.json({ questions: aiResponse.data.choices[0].message.content });
@@ -221,7 +223,8 @@ app.post("/chat", verifyToken, async (req, res) => {
             messages: [
                 { role: "system", content: system_prompt },
                 { role: "user", content: (context ? `Context:\n${context}\n\nUser Question: ${message}` : message) }
-            ]
+            ],
+            max_tokens: 1500
         });
 
         res.json({ reply: aiResponse.data.choices[0].message.content });

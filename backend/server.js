@@ -31,7 +31,7 @@ try {
 }
 
 
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const OPENROUTER_API_KEY = (process.env.OPENROUTER_API_KEY || "").trim();
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
 const aiClient = axios.create({

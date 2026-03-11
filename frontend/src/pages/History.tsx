@@ -7,7 +7,7 @@ import { Loader2, Calendar, FileText, CheckCircle, ArrowRight } from "lucide-rea
 import { useNavigate } from "react-router-dom";
 import { Download, GitCompare } from "lucide-react";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:5000" : "https://ai-resume-platform.onrender.com");
+const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:5000" : "https://resume-ai-backend-td1a.onrender.com");
 
 interface Report {
     _id: string;

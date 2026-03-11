@@ -1,6 +1,6 @@
 {
     "env": {
-        "VITE_API_URL": "https://ai-resume-platform.onrender.com"
+        "VITE_API_URL": "https://resume-ai-backend-td1a.onrender.com"
     },
     "rewrites": [
         { "source": "/(.*)", "destination": "/" }
